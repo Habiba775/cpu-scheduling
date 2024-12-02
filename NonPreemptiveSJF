@@ -10,7 +10,6 @@ class Process {
     int turnaroundTime;
     int waitingTime;
     boolean mitigated; // To track if starvation mitigation is applied
-
     Process(int pid, int burstTime, int arrivalTime) {
         this.pid = pid;
         this.burstTime = burstTime;
