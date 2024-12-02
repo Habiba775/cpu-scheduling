@@ -1,0 +1,76 @@
+package org.example;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Scanner;
+class Process {
+    int pid;
+    int burstTime;
+    int arrivalTime;
+    int completionTime;
+    int turnaroundTime;
+    int waitingTime;
+    boolean mitigated; // To track if starvation mitigation is applied
+
+    Process(int pid, int burstTime, int arrivalTime) {
+        this.pid = pid;
+        this.burstTime = burstTime;
+        this.arrivalTime = arrivalTime;
+        this.mitigated = false;
+    }
+}
+class NonPreemptiveSJF {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        ArrayList<Process> processes = new ArrayList<>();
+        System.out.print("Enter the number of processes: ");
+        int n = scanner.nextInt();
+        for (int i = 1; i <= n; i++) {
+            System.out.println("Enter details for Process " + i);
+            System.out.print("Burst Time: ");
+            int burstTime = scanner.nextInt();
+            System.out.print("Arrival Time: ");
+            int arrivalTime = scanner.nextInt();
+            processes.add(new Process(i, burstTime, arrivalTime));
+        }
+        System.out.print("Enter maximum waiting threshold to mitigate starvation: ");
+        int starvationThreshold = scanner.nextInt();
+        processes.sort(Comparator.comparingInt(p -> p.arrivalTime));
+
+        int currentTime = 0;
+        ArrayList<Process> completedProcesses = new ArrayList<>();
+
+        while (!processes.isEmpty()) {
+            ArrayList<Process> readyQueue = new ArrayList<>();
+            for (Process p : processes) {
+                if (p.arrivalTime <= currentTime) {
+                    readyQueue.add(p);
+                }
+            }
+            if (readyQueue.isEmpty()) {
+                currentTime++;
+                continue;
+            }
+            for (Process p : processes) {
+                int waitingTime = currentTime - p.arrivalTime;
+                if (!p.mitigated && waitingTime > starvationThreshold) {
+                    System.out.println("Starvation mitigation applied to Process " + p.pid);
+                    p.mitigated = true;
+                }
+            }
+            readyQueue.sort(Comparator.comparingInt((Process p) -> p.burstTime).thenComparingInt(p -> p.pid));
+            Process currentProcess = readyQueue.get(0);
+            processes.remove(currentProcess);
+            currentTime += currentProcess.burstTime;
+            currentProcess.completionTime = currentTime;
+            currentProcess.turnaroundTime = currentProcess.completionTime - currentProcess.arrivalTime;
+            currentProcess.waitingTime = currentProcess.turnaroundTime - currentProcess.burstTime;
+            completedProcesses.add(currentProcess);
+        }
+        System.out.println("\nProcess Execution Results:");
+        System.out.printf("%-10s %-12s %-12s %-15s %-15s %-15s\n", "PID", "Burst Time", "Arrival Time", "Completion Time", "Turnaround Time", "Waiting Time");
+        for (Process p : completedProcesses) {
+            System.out.printf("%-10d %-12d %-12d %-15d %-15d %-15d\n", p.pid, p.burstTime, p.arrivalTime, p.completionTime, p.turnaroundTime, p.waitingTime);
+        }
+        scanner.close();
+    }
+}
