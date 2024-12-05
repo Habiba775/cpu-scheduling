@@ -63,7 +63,7 @@ public class SRTFScheduling {
                 //If it still has remaining time + gya abl aw m3 el current time lel program
                 if (p.remainingTime > 0 && p.arrivalTime <= currentTime) {
                     // it should handle starvation
-                    if (p.waitingTime>=20) {
+                    if (p.waitingTime>=10) {
                         nextProcess = p;
                     }
                     //lw el remaining time fi el next process akbr mn el current process, khod el el current yb2a hwa el next
@@ -104,6 +104,12 @@ public class SRTFScheduling {
                 }
             } else {
                 currentTime++;
+            }
+            // Avoid starvation by incrementing priority of long-waiting processes
+            for (Process p : processes) {
+                if (p.remainingTime > 0 && p.arrivalTime <= currentTime) {
+                    p.waitingTime++;
+                }
             }
         }
 
